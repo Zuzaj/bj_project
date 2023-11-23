@@ -2,54 +2,60 @@ import tkinter as tk
 from tkinter import PhotoImage, messagebox
 import random
 
+
 class Card:
-    def __init__(self, suit: str, value: int):
-        # TODO: Initialize the attributes
-        pass
+    def __init__(self, suit: str, value: str):
+        self.suit = suit
+        self.value = value
 
     def get_numeric_value(self) -> int:
-        # TODO: Return the numeric value of the card
-        pass
+        if self.value in ['J', 'K', 'Q', 'A']:
+            return 10
+        else:
+            return int(self.value)
 
     def get_image(self):
-        # TODO: Return the path to the card's image
-        pass
+        return "img/" + self.value + "_of_" + self.suit + ".png"
+
 
 class Deck:
-    def __init__(self):
-        # TODO: Initialize the deck
-        pass
+    def __init__(self, suits=[], values=[]):
+        self.cards = [Card(suit, value) for suit in suits for value in values]
 
     def shuffle(self):
-        # TODO: Shuffle the cards
-        pass
+        random.shuffle(self.cards)
 
-    def deal(self)-> Card:
-        # TODO: Deal one card from the deck
-        pass
+    def deal(self) -> Card:
+        dealt_card = random.sample(self.cards, 1)
+        self.cards = [card for card in self.cards if card not in dealt_card]
+        return dealt_card
+
 
 class EnglishDeck(Deck):
     def __init__(self):
-        # TODO: Create a standard deck of 52 cards and shuffle them
-        pass
+        suits = ['hearts', 'diamonds', 'clubs', 'spades']
+        values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+        super().__init__(suits, values)
+
 
 class Hand:
     def __init__(self):
-        # TODO: Initialize the hand
-        pass
+        self.cards = []
 
     def add_card(self, card: Card):
-        # TODO: Add a card to the hand
-        pass
+        self.cards.append(card)
 
-    def value(self)->int:
-        # TODO: Return the total value of the hand
-        pass
+    def value(self) -> int:
+        sum_cards = 0
+        for card in self.cards:
+            sum_cards += card.get_numeric_value()
+        return sum_cards
+
 
 class Player:
     def __init__(self, name):
-        # TODO: Initialize the player's attributes
-        pass
+        self.name = name
+
 
 class BlackjackGame:
     def __init__(self):
@@ -60,7 +66,7 @@ class BlackjackGame:
         # TODO: Start a new game and deal two cards to each player
         pass
 
-    def hit(self)-> bool:
+    def hit(self) -> bool:
         # TODO: Add a card to the player's hand
         pass
 
@@ -71,6 +77,7 @@ class BlackjackGame:
     def determine_winner(self):
         # TODO: Determine and return the winner of the game
         pass
+
 
 # The GUI code is provided, so students don't need to modify it
 class BlackjackGUI:
@@ -117,7 +124,7 @@ class BlackjackGUI:
         # Remove all widgets from player, deck, and dealer frames
         for widget in self.player_frame.winfo_children():
             widget.destroy()
-        
+
         for widget in self.deck_frame.winfo_children():
             widget.destroy()
 
@@ -141,14 +148,14 @@ class BlackjackGUI:
         lbl = tk.Label(self.player_frame, image=img)
         lbl.image = img
         lbl.pack(side=tk.LEFT, padx=10)  # Center the last card horizontally a bit more
-        
+
         # Deck in the middle
         img = PhotoImage(file="img/card_back_01.png")
         lbl = tk.Label(self.deck_frame, image=img, cursor="hand2")
         lbl.image = img
         lbl.pack(side=tk.TOP, padx=10)
         lbl.bind("<Button-1>", self.handle_hit)
-        
+
         # "Stand" button below the deck
         self.btn_stand = tk.Button(self.deck_frame, text="Stand", command=self.handle_stand, state=tk.NORMAL)
         self.btn_stand.pack(side=tk.BOTTOM)
@@ -177,6 +184,8 @@ class BlackjackGUI:
 
     def run(self):
         self.root.mainloop()
+
+
 if __name__ == "__main__":
     game_logic = BlackjackGame()
     app = BlackjackGUI(game_logic)
