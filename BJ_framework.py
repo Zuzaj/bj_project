@@ -15,7 +15,7 @@ class Card:
             return int(self.value)
 
     def get_image(self):
-        return "img/" + self.value + "_of_" + self.suit + ".png"
+        return f"img/{self.value}_of_{self.suit}.png"
 
 
 class Deck:
@@ -26,16 +26,15 @@ class Deck:
         random.shuffle(self.cards)
 
     def deal(self) -> Card:
-        dealt_card = random.sample(self.cards, 1)
-        self.cards = [card for card in self.cards if card not in dealt_card]
+        dealt_card = self.cards.pop()
         return dealt_card
-
 
 class EnglishDeck(Deck):
     def __init__(self):
         suits = ['hearts', 'diamonds', 'clubs', 'spades']
         values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
         super().__init__(suits, values)
+        self.shuffle()
 
 
 class Hand:
@@ -55,28 +54,46 @@ class Hand:
 class Player:
     def __init__(self, name):
         self.name = name
+        self.hand = Hand()
 
 
 class BlackjackGame:
     def __init__(self):
-        # TODO: Initialize the game's attributes
-        pass
+        self.player = Player("player")
+        self.dealer = Player("dealer")
+        self.deck = EnglishDeck()
 
     def start_game(self):
-        # TODO: Start a new game and deal two cards to each player
-        pass
+        for i in range(2):
+            self.player.hand.add_card(self.deck.deal())
+            self.dealer.hand.add_card(self.deck.deal())
 
     def hit(self) -> bool:
-        # TODO: Add a card to the player's hand
-        pass
+        if not self.deck.cards:
+            return False
+        else:
+            self.player.hand.add_card(self.deck.deal())
+            return True
 
     def dealer_hit(self) -> bool:
-        # TODO: Deal cards to the dealer based on blackjack's standard rules
-        pass
+        while self.dealer.hand.value() < 17:
+            self.dealer.hand.add_card(self.deck.deal())
+        return True
 
     def determine_winner(self):
-        # TODO: Determine and return the winner of the game
-        pass
+        player_score = self.player.hand.value()
+        dealer_score = self.dealer.hand.value()
+
+        if player_score > 21:
+            return "You loose! The house wins."
+        if dealer_score > 21:
+            return "Dealer loose! You win."
+        if player_score > dealer_score:
+            return "You win!"
+        elif player_score < dealer_score:
+            return "Dealer wins!"
+        else:
+            return "It's a tie!"
 
 
 # The GUI code is provided, so students don't need to modify it
@@ -137,7 +154,7 @@ class BlackjackGUI:
 
         for card in self.game.player.hand.cards[:-1]:  # All cards except the last one
             img = PhotoImage(file=card.get_image())
-            img = img.subsample(3, 3)  # Resize the image (adjust according to your preference)
+            img = img.subsample(80, 80)  # Resize the image (adjust according to your preference)
             lbl = tk.Label(player_previous_frame, image=img)
             lbl.image = img
             lbl.pack(side=tk.TOP, pady=5)  # Add vertical space between cards
