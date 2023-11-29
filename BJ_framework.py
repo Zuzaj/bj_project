@@ -9,8 +9,10 @@ class Card:
         self.value = value
 
     def get_numeric_value(self) -> int:
-        if self.value in ['J', 'K', 'Q', 'A']:
+        if self.value in ['J', 'K', 'Q']:
             return 10
+        if self.value == 'A':
+            return 11
         else:
             return int(self.value)
 
@@ -19,7 +21,7 @@ class Card:
 
 
 class Deck:
-    def __init__(self, suits=[], values=[]):
+    def __init__(self, suits, values):
         self.cards = [Card(suit, value) for suit in suits for value in values]
 
     def shuffle(self):
@@ -28,6 +30,7 @@ class Deck:
     def deal(self) -> Card:
         dealt_card = self.cards.pop()
         return dealt_card
+
 
 class EnglishDeck(Deck):
     def __init__(self):
@@ -69,15 +72,13 @@ class BlackjackGame:
             self.dealer.hand.add_card(self.deck.deal())
 
     def hit(self) -> bool:
-        if not self.deck.cards:
-            return False
-        else:
-            self.player.hand.add_card(self.deck.deal())
-            return True
+        self.player.hand.add_card(self.deck.deal())
+        return self.player.hand.value() > 21
 
     def dealer_hit(self) -> bool:
-        while self.dealer.hand.value() < 17:
+        if self.dealer.hand.value() < 17:
             self.dealer.hand.add_card(self.deck.deal())
+            return False
         return True
 
     def determine_winner(self):
@@ -86,9 +87,9 @@ class BlackjackGame:
 
         if player_score > 21:
             return "You loose! The house wins."
-        if dealer_score > 21:
-            return "Dealer loose! You win."
-        if player_score > dealer_score:
+        while dealer_score < 17:
+            self.dealer.hand.add_card(self.deck.deal())
+        if player_score > dealer_score or dealer_score > 21:
             return "You win!"
         elif player_score < dealer_score:
             return "Dealer wins!"
@@ -154,7 +155,7 @@ class BlackjackGUI:
 
         for card in self.game.player.hand.cards[:-1]:  # All cards except the last one
             img = PhotoImage(file=card.get_image())
-            img = img.subsample(80, 80)  # Resize the image (adjust according to your preference)
+            img = img.subsample(3, 3)  # Resize the image (adjust according to your preference)
             lbl = tk.Label(player_previous_frame, image=img)
             lbl.image = img
             lbl.pack(side=tk.TOP, pady=5)  # Add vertical space between cards
@@ -182,7 +183,7 @@ class BlackjackGUI:
         dealer_previous_frame.pack(side=tk.RIGHT, pady=10)
 
         for card in self.game.dealer.hand.cards[:-1]:  # All cards except the last one
-            img = PhotoImage(file=card.get_image())
+            img = tk.PhotoImage(file=card.get_image())
             img = img.subsample(3, 3)  # Resize the image (adjust according to your preference)
             lbl = tk.Label(dealer_previous_frame, image=img)
             lbl.image = img
